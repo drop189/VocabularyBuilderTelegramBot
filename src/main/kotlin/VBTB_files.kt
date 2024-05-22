@@ -19,16 +19,14 @@ fun main() {
             correctAnswersCount = splitLines.getOrNull(2)?.toIntOrNull() ?: 0
         )
         dictionary.add(word)
-
     }
-    dictionary.forEach { println(it) }
 
     while (true) {
         println("Выберите пункт из меню")
         val userInput = readln().toIntOrNull()
         when (userInput) {
             1 -> {
-
+                println("Вы выбрали 1")
             }
 
             2 -> {

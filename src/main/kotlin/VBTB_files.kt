@@ -1,5 +1,7 @@
 import java.io.File
 
+const val REQUIRED_CORRECT_ANSWERS = 3
+
 data class Word(
     val original: String,
     val translate: String,
@@ -22,7 +24,12 @@ fun main() {
     }
 
     while (true) {
-        println("Выберите пункт из меню")
+        println(
+            "Меню: \n" +
+                    "1 – Учить слова\n" +
+                    "2 – Статистика \n" +
+                    "0 – Выход"
+        )
         val userInput = readln().toIntOrNull()
         when (userInput) {
             1 -> {
@@ -30,7 +37,8 @@ fun main() {
             }
 
             2 -> {
-                val learnedWords = dictionary.filter { word: Word -> word.correctAnswersCount >= 3 }
+                val learnedWords =
+                    dictionary.filter { word: Word -> word.correctAnswersCount >= REQUIRED_CORRECT_ANSWERS }
                 val percentageOfLearnedWords = ((learnedWords.size.toDouble() / dictionary.size) * 100).toInt()
 
                 println("Выучено ${learnedWords.size} из ${dictionary.size} слов | ${percentageOfLearnedWords}%")

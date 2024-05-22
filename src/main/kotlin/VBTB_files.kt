@@ -33,7 +33,26 @@ fun main() {
         val userInput = readln().toIntOrNull()
         when (userInput) {
             1 -> {
-                println("Вы выбрали 1")
+                while (true) {
+                    val unlearnedWords = dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }
+
+                    if (unlearnedWords.isEmpty()) {
+                        println("Поздравляю, вы выучили все слова")
+                        return
+                    } else {
+
+                        val answerOptions = unlearnedWords.shuffled().take(4)
+                        val correctWord = answerOptions.random()
+
+                        println(
+                            "\t\t${correctWord.original}\n" +
+                                    "1.${answerOptions[0].translate}\t2.${answerOptions[1].translate}\n" +
+                                    "3.${answerOptions[2].translate}\t4.${answerOptions[3].translate}"
+                        )
+
+                        break
+                    }
+                }
             }
 
             2 -> {
@@ -54,31 +73,4 @@ fun main() {
             }
         }
     }
-
-    while (true) {
-        println("Выберите пункт из меню")
-        val userInput = readln().toIntOrNull()
-        when (userInput) {
-            1 -> {
-
-            }
-
-            2 -> {
-                val learnedWords = dictionary.filter { word: Word -> word.correctAnswersCount >= 3 }
-                val percentageOfLearnedWords = ((learnedWords.size.toDouble() / dictionary.size) * 100).toInt()
-
-                println("Выучено ${learnedWords.size} из ${dictionary.size} слов | ${percentageOfLearnedWords}%")
-            }
-
-            0 -> {
-                println("Всего хорошего")
-                return
-            }
-
-            else -> {
-                println("Введен неверный пункт меню")
-            }
-        }
-    }
-
 }

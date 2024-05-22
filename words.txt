@@ -1,6 +1,22 @@
 hello|привет|2
 dog|собака|1
 cat|кошка|3
-thank you|спасибо
-good|хорошо|
+thank you|спасибо|1
+good|хорошо|2
 castle|замок|4
+apple|яблоко|2
+bird|птица|1
+mouse|мышь|3
+fort|крепость|4
+water|вода|3
+sun|солнце|2
+moon|луна|1
+forest|лес|5
+bread|хлеб|4
+tree|дерево|2
+book|книга|1
+mountain|гора|3
+please|пожалуйста
+well|хорошо|
+friend|друг|
+happy|счастлив

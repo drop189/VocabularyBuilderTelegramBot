@@ -2,3 +2,5 @@ hello|привет|2
 dog|собака|1
 cat|кошка|3
 thank you|спасибо
+good|хорошо|
+castle|замок|f

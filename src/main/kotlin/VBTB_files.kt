@@ -18,7 +18,7 @@ fun main() {
         val word = Word(
             original = splitLines[0],
             translate = splitLines[1],
-            correctAnswersCount = splitLines.getOrNull(2)?.toInt() ?: 0
+            correctAnswersCount = splitLines.getOrNull(2)?.toIntOrNull() ?: 0
         )
         dictionary.add(word)
 

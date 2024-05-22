@@ -1,6 +1,7 @@
 import java.io.File
 
 const val REQUIRED_CORRECT_ANSWERS = 3
+const val NUMBER_OF_ANSWERS = 4
 
 data class Word(
     val original: String,
@@ -34,21 +35,21 @@ fun main() {
         when (userInput) {
             1 -> {
                 while (true) {
-                    val unlearnedWords = dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }
+                    val unlearnedWords =
+                        dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }.toMutableList()
 
                     if (unlearnedWords.isEmpty()) {
                         println("Поздравляю, вы выучили все слова")
                         return
                     } else {
 
-                        val answerOptions = unlearnedWords.shuffled().take(4)
+                        if (unlearnedWords.size < 4) unlearnedWords += dictionary
+                        val answerOptions = unlearnedWords.shuffled().take(NUMBER_OF_ANSWERS)
                         val correctWord = answerOptions.random()
 
-                        println(
-                            "\t\t${correctWord.original}\n" +
-                                    "1.${answerOptions[0].translate}\t2.${answerOptions[1].translate}\n" +
-                                    "3.${answerOptions[2].translate}\t4.${answerOptions[3].translate}"
-                        )
+
+                        println("\t${correctWord.original}")
+                        answerOptions.forEachIndexed { index, word -> println("${index + 1}. ${word.translate}") }
 
                         break
                     }

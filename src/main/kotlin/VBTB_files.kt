@@ -36,15 +36,15 @@ fun main() {
             1 -> {
                 while (true) {
                     val unlearnedWords =
-                        dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }.toMutableList()
+                        dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }
 
                     if (unlearnedWords.isEmpty()) {
                         println("Поздравляю, вы выучили все слова")
                         return
                     } else {
 
-                        if (unlearnedWords.size < 4) unlearnedWords += dictionary
-                        val answerOptions = unlearnedWords.shuffled().take(NUMBER_OF_ANSWERS)
+                        val listOfWords = unlearnedWords + dictionary
+                        val answerOptions = listOfWords.shuffled().take(NUMBER_OF_ANSWERS)
                         val correctWord = answerOptions.random()
 
 

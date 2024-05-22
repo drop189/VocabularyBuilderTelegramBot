@@ -3,4 +3,4 @@ dog|собака|1
 cat|кошка|3
 thank you|спасибо
 good|хорошо|
-castle|замок|f
+castle|замок|4

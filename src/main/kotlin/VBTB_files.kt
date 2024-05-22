@@ -1,5 +1,3 @@
-package org.example
-
 import java.io.File
 
 data class Word(
@@ -24,5 +22,31 @@ fun main() {
 
     }
     dictionary.forEach { println(it) }
+
+    while (true) {
+        println("Выберите пункт из меню")
+        val userInput = readln().toIntOrNull()
+        when (userInput) {
+            1 -> {
+
+            }
+
+            2 -> {
+                val learnedWords = dictionary.filter { word: Word -> word.correctAnswersCount >= 3 }
+                val percentageOfLearnedWords = ((learnedWords.size.toDouble() / dictionary.size) * 100).toInt()
+
+                println("Выучено ${learnedWords.size} из ${dictionary.size} слов | ${percentageOfLearnedWords}%")
+            }
+
+            0 -> {
+                println("Всего хорошего")
+                return
+            }
+
+            else -> {
+                println("Введен неверный пункт меню")
+            }
+        }
+    }
 
 }

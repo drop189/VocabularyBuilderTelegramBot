@@ -49,12 +49,13 @@ fun main() {
                         if (unlearnedWords.size < NUMBER_OF_ANSWERS) {
                             var setOfWords = unlearnedWords.toSet()
 
-                            while (setOfWords.size < NUMBER_OF_ANSWERS){
-                                setOfWords = (unlearnedWords + dictionary).toSet()
+                            while (setOfWords.size < NUMBER_OF_ANSWERS) {
+                                setOfWords = (unlearnedWords + dictionary.shuffled()
+                                    .take(NUMBER_OF_ANSWERS - unlearnedWords.size)).toSet()
                             }
 
                             answerOptions = setOfWords.shuffled().take(NUMBER_OF_ANSWERS)
-                            correctWord = answerOptions.random()
+                            correctWord = unlearnedWords.random()
                         } else {
 
                             answerOptions = unlearnedWords.shuffled().take(NUMBER_OF_ANSWERS)

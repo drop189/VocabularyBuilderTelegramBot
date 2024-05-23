@@ -43,10 +43,19 @@ fun main() {
                         return
                     } else {
 
-                        val setOfWords = (unlearnedWords + dictionary).toSet()
-                        val answerOptions = setOfWords.shuffled().take(NUMBER_OF_ANSWERS)
-                        val correctWord = answerOptions.random()
+                        val answerOptions: List<Word>
+                        val correctWord: Word
 
+                        if (unlearnedWords.size < NUMBER_OF_ANSWERS) {
+                            val setOfWords = (unlearnedWords + dictionary).toSet()
+
+                            answerOptions = setOfWords.shuffled().take(NUMBER_OF_ANSWERS)
+                            correctWord = answerOptions.random()
+                        } else {
+
+                            answerOptions = unlearnedWords.shuffled().take(NUMBER_OF_ANSWERS)
+                            correctWord = answerOptions.random()
+                        }
 
                         println("\t${correctWord.original}")
                         answerOptions.forEachIndexed { index, word -> println("${index + 1}. ${word.translate}") }

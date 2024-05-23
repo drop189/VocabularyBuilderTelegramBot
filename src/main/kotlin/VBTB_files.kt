@@ -43,8 +43,8 @@ fun main() {
                         return
                     } else {
 
-                        val listOfWords = unlearnedWords + dictionary
-                        val answerOptions = listOfWords.shuffled().take(NUMBER_OF_ANSWERS)
+                        val setOfWords = (unlearnedWords + dictionary).toSet()
+                        val answerOptions = setOfWords.shuffled().take(NUMBER_OF_ANSWERS)
                         val correctWord = answerOptions.random()
 
 

@@ -17,6 +17,6 @@ tree|дерево|2
 book|книга|1
 mountain|гора|3
 please|пожалуйста
-well|хорошо|
 friend|друг|
-happy|счастлив
+happy|счастлив|
+great|отлично

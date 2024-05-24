@@ -47,14 +47,14 @@ fun main() {
                         val correctWord: Word
 
                         if (unlearnedWords.size < NUMBER_OF_ANSWERS) {
-                            var setOfWords = unlearnedWords.toSet()
 
-                            while (setOfWords.size < NUMBER_OF_ANSWERS) {
-                                setOfWords = (unlearnedWords + dictionary.shuffled()
-                                    .take(NUMBER_OF_ANSWERS - unlearnedWords.size)).toSet()
-                            }
+                            val learnedWords =
+                                dictionary.filter { it.correctAnswersCount >= REQUIRED_CORRECT_ANSWERS }
 
-                            answerOptions = setOfWords.shuffled().take(NUMBER_OF_ANSWERS)
+                            val listOfWords =
+                                unlearnedWords + learnedWords.take(NUMBER_OF_ANSWERS - unlearnedWords.size)
+
+                            answerOptions = listOfWords.shuffled().take(NUMBER_OF_ANSWERS)
                             correctWord = unlearnedWords.random()
                         } else {
 

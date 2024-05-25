@@ -1,6 +1,7 @@
 import java.io.File
 
 const val REQUIRED_CORRECT_ANSWERS = 3
+const val NUMBER_OF_ANSWERS = 4
 
 data class Word(
     val original: String,
@@ -33,7 +34,40 @@ fun main() {
         val userInput = readln().toIntOrNull()
         when (userInput) {
             1 -> {
-                println("Вы выбрали 1")
+                while (true) {
+                    val unlearnedWords =
+                        dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }
+
+                    if (unlearnedWords.isEmpty()) {
+                        println("Поздравляю, вы выучили все слова")
+                        return
+                    } else {
+
+                        val answerOptions: List<Word>
+                        val correctWord: Word
+
+                        if (unlearnedWords.size < NUMBER_OF_ANSWERS) {
+
+                            val learnedWords =
+                                dictionary.filter { it.correctAnswersCount >= REQUIRED_CORRECT_ANSWERS }
+
+                            val listOfWords =
+                                unlearnedWords + learnedWords.take(NUMBER_OF_ANSWERS - unlearnedWords.size)
+
+                            answerOptions = listOfWords.shuffled().take(NUMBER_OF_ANSWERS)
+                            correctWord = unlearnedWords.random()
+                        } else {
+
+                            answerOptions = unlearnedWords.shuffled().take(NUMBER_OF_ANSWERS)
+                            correctWord = answerOptions.random()
+                        }
+
+                        println("\t${correctWord.original}")
+                        answerOptions.forEachIndexed { index, word -> println("${index + 1}. ${word.translate}") }
+
+                        break
+                    }
+                }
             }
 
             2 -> {
@@ -54,31 +88,4 @@ fun main() {
             }
         }
     }
-
-    while (true) {
-        println("Выберите пункт из меню")
-        val userInput = readln().toIntOrNull()
-        when (userInput) {
-            1 -> {
-
-            }
-
-            2 -> {
-                val learnedWords = dictionary.filter { word: Word -> word.correctAnswersCount >= 3 }
-                val percentageOfLearnedWords = ((learnedWords.size.toDouble() / dictionary.size) * 100).toInt()
-
-                println("Выучено ${learnedWords.size} из ${dictionary.size} слов | ${percentageOfLearnedWords}%")
-            }
-
-            0 -> {
-                println("Всего хорошего")
-                return
-            }
-
-            else -> {
-                println("Введен неверный пункт меню")
-            }
-        }
-    }
-
 }

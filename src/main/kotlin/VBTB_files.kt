@@ -72,9 +72,7 @@ fun main() {
                         val numberOfCorrectWord = answerOptions.indexOf(correctWord) + INDEX_CORRECTION
 
                         when (userInputGuess) {
-                            0 -> {
-                                break
-                            }
+                            0 -> break
 
                             numberOfCorrectWord -> {
                                 correctWord.correctAnswersCount++

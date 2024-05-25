@@ -114,6 +114,4 @@ fun saveDictionary(dictionary: MutableList<Word>) {
     for (word in dictionary) {
         file.appendText("${word.original}|${word.translate}|${word.correctAnswersCount}\n")
     }
-
-    println("Сохранение в словарь")
 }

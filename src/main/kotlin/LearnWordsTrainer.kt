@@ -11,36 +11,9 @@ data class Question(
 )
 
 class LearnWordsTrainer {
-
     private lateinit var question: Question
 
     val dictionary = loadDictionary()
-
-    private fun loadDictionary(): MutableList<Word> {
-        val wordsFile = File("words.txt")
-        val dictionary = mutableListOf<Word>()
-
-        val lines = wordsFile.readLines()
-        for (line in lines) {
-            val splitLines = line.split("|")
-            val word = Word(
-                original = splitLines[0],
-                translate = splitLines[1],
-                correctAnswersCount = splitLines.getOrNull(2)?.toIntOrNull() ?: 0
-            )
-            dictionary.add(word)
-        }
-        return dictionary
-    }
-
-    private fun saveDictionary(dictionary: MutableList<Word>) {
-        val file = File("words.txt")
-
-        file.writeText("")
-        for (word in dictionary) {
-            file.appendText("${word.original}|${word.translate}|${word.correctAnswersCount}\n")
-        }
-    }
 
     fun getStatistics(): Statistics {
 
@@ -80,7 +53,6 @@ class LearnWordsTrainer {
         return question
     }
 
-
     fun checkAnswer(): Unit? {
         val numberOfCorrectWord = question.variants.indexOf(question.correctAnswer) + INDEX_CORRECTION
 
@@ -97,4 +69,30 @@ class LearnWordsTrainer {
         }
     }
 
+
+    private fun loadDictionary(): MutableList<Word> {
+        val wordsFile = File("words.txt")
+        val dictionary = mutableListOf<Word>()
+
+        val lines = wordsFile.readLines()
+        for (line in lines) {
+            val splitLines = line.split("|")
+            val word = Word(
+                original = splitLines[0],
+                translate = splitLines[1],
+                correctAnswersCount = splitLines.getOrNull(2)?.toIntOrNull() ?: 0
+            )
+            dictionary.add(word)
+        }
+        return dictionary
+    }
+
+    private fun saveDictionary(dictionary: MutableList<Word>) {
+        val file = File("words.txt")
+
+        file.writeText("")
+        for (word in dictionary) {
+            file.appendText("${word.original}|${word.translate}|${word.correctAnswersCount}\n")
+        }
+    }
 }

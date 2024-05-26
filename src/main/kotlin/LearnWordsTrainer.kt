@@ -10,7 +10,10 @@ data class Question(
     val correctAnswer: Word,
 )
 
-class LearnWordsTrainer {
+class LearnWordsTrainer(
+    private val numberOfAnswers: Int = 4,
+    private val requiredCorrectAnswers: Int = 3,
+) {
     private var question: Question? = null
 
     val dictionary = loadDictionary()
@@ -18,7 +21,7 @@ class LearnWordsTrainer {
     fun getStatistics(): Statistics {
 
         val learnedWords =
-            dictionary.filter { word: Word -> word.correctAnswersCount >= REQUIRED_CORRECT_ANSWERS }
+            dictionary.filter { word: Word -> word.correctAnswersCount >= requiredCorrectAnswers }
         val percentageOfLearnedWords = ((learnedWords.size.toDouble() / dictionary.size) * 100).toInt()
 
         return Statistics(learnedWords, percentageOfLearnedWords)
@@ -26,26 +29,26 @@ class LearnWordsTrainer {
 
     fun getNextQuestion(): Question? {
         val unlearnedWords =
-            dictionary.filter { it.correctAnswersCount < REQUIRED_CORRECT_ANSWERS }
+            dictionary.filter { it.correctAnswersCount < requiredCorrectAnswers }
 
         if (unlearnedWords.isEmpty()) return null
 
         val answerOptions: List<Word>
         val correctWord: Word
 
-        if (unlearnedWords.size < NUMBER_OF_ANSWERS) {
+        if (unlearnedWords.size < numberOfAnswers) {
 
             val learnedWords =
-                dictionary.filter { it.correctAnswersCount >= REQUIRED_CORRECT_ANSWERS }
+                dictionary.filter { it.correctAnswersCount >= requiredCorrectAnswers }
 
             val listOfWords =
-                unlearnedWords + learnedWords.take(NUMBER_OF_ANSWERS - unlearnedWords.size)
+                unlearnedWords + learnedWords.take(numberOfAnswers - unlearnedWords.size)
 
-            answerOptions = listOfWords.shuffled().take(NUMBER_OF_ANSWERS)
+            answerOptions = listOfWords.shuffled().take(numberOfAnswers)
             correctWord = unlearnedWords.random()
         } else {
 
-            answerOptions = unlearnedWords.shuffled().take(NUMBER_OF_ANSWERS)
+            answerOptions = unlearnedWords.shuffled().take(numberOfAnswers)
             correctWord = answerOptions.random()
         }
 
@@ -65,7 +68,7 @@ class LearnWordsTrainer {
     }
 
 
-    private fun loadDictionary(): MutableList<Word> {
+    private fun loadDictionary(): List<Word> {
         val wordsFile = File("words.txt")
         val dictionary = mutableListOf<Word>()
 
@@ -82,7 +85,7 @@ class LearnWordsTrainer {
         return dictionary
     }
 
-    private fun saveDictionary(dictionary: MutableList<Word>) {
+    private fun saveDictionary(dictionary: List<Word>) {
         val file = File("words.txt")
 
         file.writeText("")

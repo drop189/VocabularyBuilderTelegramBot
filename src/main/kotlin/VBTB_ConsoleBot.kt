@@ -1,5 +1,3 @@
-const val REQUIRED_CORRECT_ANSWERS = 3
-const val NUMBER_OF_ANSWERS = 4
 const val INDEX_CORRECTION = 1
 
 data class Word(

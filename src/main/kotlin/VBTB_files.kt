@@ -2,11 +2,13 @@ import java.io.File
 
 const val REQUIRED_CORRECT_ANSWERS = 3
 const val NUMBER_OF_ANSWERS = 4
+const val INVALID_GUESS = -1
+const val INDEX_CORRECTION = 1
 
 data class Word(
     val original: String,
     val translate: String,
-    val correctAnswersCount: Int = 0
+    var correctAnswersCount: Int = 0
 )
 
 fun main() {
@@ -63,9 +65,24 @@ fun main() {
                         }
 
                         println("\t${correctWord.original}")
-                        answerOptions.forEachIndexed { index, word -> println("${index + 1}. ${word.translate}") }
+                        answerOptions.forEachIndexed { index, word -> println("${index + INDEX_CORRECTION}. ${word.translate}") }
+                        println("0. Главное меню")
 
-                        break
+                        val userInputGuess = readln().toIntOrNull() ?: INVALID_GUESS
+                        val numberOfCorrectWord = answerOptions.indexOf(correctWord) + INDEX_CORRECTION
+
+                        when (userInputGuess) {
+                            0 -> break
+
+                            numberOfCorrectWord -> {
+                                correctWord.correctAnswersCount++
+
+                                println("Правильно")
+                                saveDictionary(dictionary)
+                            }
+
+                            else -> println("Не правильно")
+                        }
                     }
                 }
             }
@@ -87,5 +104,14 @@ fun main() {
                 println("Введен неверный пункт меню")
             }
         }
+    }
+}
+
+fun saveDictionary(dictionary: MutableList<Word>) {
+    val file = File("words.txt")
+
+    file.writeText("")
+    for (word in dictionary) {
+        file.appendText("${word.original}|${word.translate}|${word.correctAnswersCount}\n")
     }
 }

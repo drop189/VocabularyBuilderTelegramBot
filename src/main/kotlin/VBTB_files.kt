@@ -1,6 +1,5 @@
 const val REQUIRED_CORRECT_ANSWERS = 3
 const val NUMBER_OF_ANSWERS = 4
-const val INVALID_GUESS = -1
 const val INDEX_CORRECTION = 1
 
 data class Word(
@@ -8,6 +7,14 @@ data class Word(
     val translate: String,
     var correctAnswersCount: Int = 0
 )
+
+private fun printQuestion(question: Question) {
+    println("\t${question.correctAnswer.original}")
+    question.variants.forEachIndexed { index, word ->
+        println("${index + INDEX_CORRECTION}. ${word.translate}")
+    }
+    println("0. Главное меню")
+}
 
 fun main() {
 
@@ -31,7 +38,13 @@ fun main() {
                         return
                     } else {
                         printQuestion(question)
-                        trainer.checkAnswer() ?: break
+
+                        val userAnswerInput = readln().toIntOrNull()
+                        if (userAnswerInput == 0) break
+
+                        if (trainer.checkAnswer(userAnswerInput?.minus(INDEX_CORRECTION))) {
+                            println("Правильно")
+                        } else println("Не правильно")
                     }
                 }
             }
@@ -56,12 +69,4 @@ fun main() {
             }
         }
     }
-}
-
-private fun printQuestion(question: Question) {
-    println("\t${question.correctAnswer.original}")
-    question.variants.forEachIndexed { index, word ->
-        println("${index + INDEX_CORRECTION}. ${word.translate}")
-    }
-    println("0. Главное меню")
 }

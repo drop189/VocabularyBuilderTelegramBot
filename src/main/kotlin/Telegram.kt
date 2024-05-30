@@ -1,13 +1,19 @@
+private const val DELAY_MS = 2000L
+
 fun main(args: Array<String>) {
 
     val botToken = args[0]
-    val telegramBotService = TelegramBotService()
+    val telegramBotService = TelegramBotService(botToken)
     var updateId = 0
+    
+    val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
+    val chatIdRegex: Regex = "\"chat\":\\{\"id\":(.+?),\"".toRegex()
 
     while (true) {
-        Thread.sleep(2000)
+        Thread.sleep(DELAY_MS)
 
-        val updates = telegramBotService.getUpdates(botToken, updateId)
+        val updates = telegramBotService.getUpdates(updateId)
+
         println(updates) //
 
         val startUpdateId = updates.lastIndexOf("update_id")
@@ -20,20 +26,17 @@ fun main(args: Array<String>) {
         updateId = updateIdString.toInt() + 1
 
 
-        val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
         val matchResult: MatchResult? = messageTextRegex.find(updates)
         val groups: MatchGroupCollection? = matchResult?.groups
         val text = groups?.get(1)?.value
         println(text)
 
-        val chatIdRegex: Regex = "\"chat\":\\{\"id\":(.+?),\"".toRegex()
         val matchResultChatId: MatchResult? = chatIdRegex.find(updates)
         val groupsChatId: MatchGroupCollection? = matchResultChatId?.groups
         val chatId = groupsChatId?.get(1)?.value
         println(chatId)
 
         if (text.equals("Hello", ignoreCase = true)) telegramBotService.sendMessage(
-            botToken,
             chatId?.toIntOrNull() ?: 0,
             "Hello"
         )

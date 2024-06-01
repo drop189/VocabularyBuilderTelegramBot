@@ -1,11 +1,5 @@
 const val INDEX_CORRECTION = 1
 
-data class Word(
-    val original: String,
-    val translate: String,
-    var correctAnswersCount: Int = 0
-)
-
 private fun printQuestion(question: Question) {
     println("\t${question.correctAnswer.original}")
     question.variants.forEachIndexed { index, word ->

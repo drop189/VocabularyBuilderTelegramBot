@@ -95,13 +95,10 @@ class TelegramBotService(private val botToken: String) {
     """.trimIndent()
         }
 
-
-        val buttonRows = buttons?.chunked(2)?.map { row ->
-            row.joinToString(
-                prefix = "\n[\n",
-                postfix = "\n]\n",
-                separator = ",\n"
-            )
+        val buttonRows = buttons?.map { button ->
+            """
+    [$button]
+    """.trimIndent()
         }
 
         val sendMenuBody = """

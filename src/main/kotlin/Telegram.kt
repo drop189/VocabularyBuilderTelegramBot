@@ -27,24 +27,24 @@ fun main(args: Array<String>) {
         updateId = updateIdInt + 1
 
         val text = messageTextRegex.find(updates)?.groups?.get(1)?.value
-        val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toInt()
+        val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toInt() ?: continue
         val data = dataRegex.find(updates)?.groups?.get(1)?.value
 
         println(text)
         println(chatId)
 
 
-        if (text.equals("Hello", ignoreCase = true) && chatId != null) telegramBotService.sendMessage(
+        if (text.equals("Hello", ignoreCase = true)) telegramBotService.sendMessage(
             chatId,
             "Hello"
         )
-        if (text.equals("Menu", ignoreCase = true) && chatId != null) telegramBotService.sendMenu(chatId)
+        if (text.equals("Menu", ignoreCase = true)) telegramBotService.sendMenu(chatId)
         /***/
-        if (text.equals("/start", ignoreCase = true) && chatId != null) telegramBotService.sendMenu(chatId)
-        if (data.equals(LEARN_WORDS_CLICKED, ignoreCase = true) && chatId != null) {
+        if (text.equals("/start", ignoreCase = true)) telegramBotService.sendMenu(chatId)
+        if (data.equals(LEARN_WORDS_CLICKED, ignoreCase = true)) {
             telegramBotService.checkNextQuestionAndSend(trainer, chatId)
         }
-        if (data.equals(STATISTICS_CLICKED, ignoreCase = true) && chatId != null) {
+        if (data.equals(STATISTICS_CLICKED, ignoreCase = true)) {
 
             val statistics = trainer.getStatistics()
 
@@ -55,7 +55,7 @@ fun main(args: Array<String>) {
                         "${statistics.percentageOfLearnedWords}%"
             )
         }
-        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) ?: continue && chatId != null) {
+        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) ?: continue) {
             val indexOfAnswer = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
             val isCorrect = trainer.checkAnswer(indexOfAnswer)
 

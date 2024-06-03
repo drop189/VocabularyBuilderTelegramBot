@@ -67,7 +67,7 @@ class TelegramBotService(private val botToken: String) {
         return response.body()
     }
 
-    //
+
     fun checkNextQuestionAndSend(trainer: LearnWordsTrainer, chatId: Int) {
 
         val question = trainer.getNextQuestion()

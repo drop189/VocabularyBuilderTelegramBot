@@ -86,33 +86,30 @@ class TelegramBotService(private val botToken: String) {
 
         val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/sendMessage"
 
+        val buttons = question?.variants?.mapIndexed { index, variant ->
+            """
+    {
+        "text": "${variant.translate}",
+        "callback_data": "${CALLBACK_DATA_ANSWER_PREFIX}${index}"
+    }
+    """.trimIndent()
+        }
+
+
+        val buttonRows = buttons?.chunked(2)?.map { row ->
+            row.joinToString(
+                prefix = "\n[\n",
+                postfix = "\n]\n",
+                separator = ",\n"
+            )
+        }
+
         val sendMenuBody = """
             {
 	"chat_id": $chatId,
 	"text": "${question?.correctAnswer?.original}",
 	"reply_markup": {
-		"inline_keyboard": [
-			[
-				{
-					"text":"${question?.variants?.get(0)?.translate}",
-					"callback_data": "${CALLBACK_DATA_ANSWER_PREFIX + 0}"
-				},
-				{
-					"text":"${question?.variants?.get(1)?.translate}",
-					"callback_data": "${CALLBACK_DATA_ANSWER_PREFIX + 1}"
-				}
-            ],
-            [
-                {
-					"text":"${question?.variants?.get(2)?.translate}",
-					"callback_data": "${CALLBACK_DATA_ANSWER_PREFIX + 2}"
-				},
-				{
-					"text":"${question?.variants?.get(3)?.translate}",
-					"callback_data": "${CALLBACK_DATA_ANSWER_PREFIX + 3}"
-				}
-            ]
-		]
+		"inline_keyboard": $buttonRows
 	}
 }
         """.trimIndent()

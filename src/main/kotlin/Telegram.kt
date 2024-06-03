@@ -1,44 +1,75 @@
 private const val DELAY_MS = 2000L
 
+const val LEARN_WORDS_CLICKED = "learn_words_clicked"
+const val STATISTICS_CLICKED = "statistics_clicked"
+const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
+
 fun main(args: Array<String>) {
 
     val botToken = args[0]
     val telegramBotService = TelegramBotService(botToken)
     var updateId = 0
-    
+
+    val trainer = LearnWordsTrainer()
+
+    val updateIdRegex: Regex = "\"update_id\":(\\d+)".toRegex()
     val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
     val chatIdRegex: Regex = "\"chat\":\\{\"id\":(.+?),\"".toRegex()
+    val dataRegex: Regex = "\"data\":\"(.+?)\"".toRegex()
 
     while (true) {
         Thread.sleep(DELAY_MS)
 
         val updates = telegramBotService.getUpdates(updateId)
-
         println(updates) //
 
-        val startUpdateId = updates.lastIndexOf("update_id")
-        val endUpdateId = updates.lastIndexOf(",\n\"message\"")
+        val updateIdInt = updateIdRegex.find(updates)?.groups?.get(1)?.value?.toIntOrNull() ?: continue
+        updateId = updateIdInt + 1
 
-        if (startUpdateId == -1 || endUpdateId == -1) continue
+        val text = messageTextRegex.find(updates)?.groups?.get(1)?.value
+        val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toInt() ?: continue
+        val data = dataRegex.find(updates)?.groups?.get(1)?.value
 
-        val updateIdString = updates.substring(startUpdateId + 11, endUpdateId)
-
-        updateId = updateIdString.toInt() + 1
-
-
-        val matchResult: MatchResult? = messageTextRegex.find(updates)
-        val groups: MatchGroupCollection? = matchResult?.groups
-        val text = groups?.get(1)?.value
         println(text)
-
-        val matchResultChatId: MatchResult? = chatIdRegex.find(updates)
-        val groupsChatId: MatchGroupCollection? = matchResultChatId?.groups
-        val chatId = groupsChatId?.get(1)?.value
         println(chatId)
 
+
         if (text.equals("Hello", ignoreCase = true)) telegramBotService.sendMessage(
-            chatId?.toIntOrNull() ?: 0,
+            chatId,
             "Hello"
         )
+        if (text.equals("Menu", ignoreCase = true)) telegramBotService.sendMenu(chatId)
+        /***/
+        if (text.equals("/start", ignoreCase = true)) telegramBotService.sendMenu(chatId)
+        if (data.equals(LEARN_WORDS_CLICKED, ignoreCase = true)) {
+            telegramBotService.checkNextQuestionAndSend(trainer, chatId)
+        }
+        if (data.equals(STATISTICS_CLICKED, ignoreCase = true)) {
+
+            val statistics = trainer.getStatistics()
+
+            telegramBotService.sendMessage(
+                chatId,
+                "Выучено ${statistics.learnedWords.size} из " +
+                        "${trainer.dictionary.size} слов | " +
+                        "${statistics.percentageOfLearnedWords}%"
+            )
+        }
+        if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) ?: continue) {
+            val indexOfAnswer = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
+            val isCorrect = trainer.checkAnswer(indexOfAnswer)
+
+            if (isCorrect) {
+                telegramBotService.sendMessage(chatId, "Правильно")
+            } else {
+                telegramBotService.sendMessage(
+                    chatId,
+                    "Не правильно: " +
+                            "${trainer.question?.correctAnswer?.original} - ${trainer.question?.correctAnswer?.translate}"
+                )
+            }
+
+            telegramBotService.checkNextQuestionAndSend(trainer, chatId)
+        }
     }
 }

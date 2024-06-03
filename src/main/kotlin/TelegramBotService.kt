@@ -95,7 +95,7 @@ class TelegramBotService(private val botToken: String) {
     """.trimIndent()
         }
 
-        val buttonRows = buttons?.map { button ->
+        val inlineKeyboard = buttons?.map { button ->
             """
     [$button]
     """.trimIndent()
@@ -106,7 +106,7 @@ class TelegramBotService(private val botToken: String) {
 	"chat_id": $chatId,
 	"text": "${question?.correctAnswer?.original}",
 	"reply_markup": {
-		"inline_keyboard": $buttonRows
+		"inline_keyboard": $inlineKeyboard
 	}
 }
         """.trimIndent()

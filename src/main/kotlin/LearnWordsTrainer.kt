@@ -1,4 +1,12 @@
+import kotlinx.serialization.Serializable
 import java.io.File
+
+@Serializable
+data class Word(
+    val original: String,
+    val translate: String,
+    var correctAnswersCount: Int = 0
+)
 
 data class Statistics(
     val learnedWords: List<Word>,
@@ -10,13 +18,8 @@ data class Question(
     val correctAnswer: Word,
 )
 
-data class Word(
-    val original: String,
-    val translate: String,
-    var correctAnswersCount: Int = 0
-)
-
 class LearnWordsTrainer(
+    private val fileName: String = "words.txt",
     private val numberOfAnswers: Int = 4,
     private val requiredCorrectAnswers: Int = 3,
 ) {
@@ -36,7 +39,6 @@ class LearnWordsTrainer(
     fun getNextQuestion(): Question? {
         val unlearnedWords =
             dictionary.filter { it.correctAnswersCount < requiredCorrectAnswers }
-
         if (unlearnedWords.isEmpty()) return null
 
         val answerOptions: List<Word>
@@ -67,7 +69,7 @@ class LearnWordsTrainer(
             val numberOfCorrectWord = it.variants.indexOf(it.correctAnswer)
             if (userAnswerInput == numberOfCorrectWord) {
                 it.correctAnswer.correctAnswersCount++
-                saveDictionary(dictionary)
+                saveDictionary()
                 true
             } else false
         } ?: false
@@ -75,7 +77,10 @@ class LearnWordsTrainer(
 
 
     private fun loadDictionary(): List<Word> {
-        val wordsFile = File("words.txt")
+        val wordsFile = File(fileName)
+        if (!wordsFile.exists()) {
+            File("words.txt").copyTo(wordsFile)
+        }
         val dictionary = mutableListOf<Word>()
 
         val lines = wordsFile.readLines()
@@ -91,12 +96,16 @@ class LearnWordsTrainer(
         return dictionary
     }
 
-    private fun saveDictionary(dictionary: List<Word>) {
-        val file = File("words.txt")
-
+    private fun saveDictionary() {
+        val file = File(fileName)
         file.writeText("")
         for (word in dictionary) {
             file.appendText("${word.original}|${word.translate}|${word.correctAnswersCount}\n")
         }
+    }
+
+    fun resetProgress() {
+        dictionary.forEach { it.correctAnswersCount = 0 }
+        saveDictionary()
     }
 }

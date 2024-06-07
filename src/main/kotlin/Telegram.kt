@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
         val response: Response = telegramBotService.getUpdates(lastUpdateId)
         if (response.result.isEmpty()) continue
         val sortedUpdates = response.result.sortedBy { it.updateId }
-        sortedUpdates.forEach { handleUpdate(it, /*json,*/ telegramBotService, trainers) }
+        sortedUpdates.forEach { handleUpdate(it, telegramBotService, trainers) }
         lastUpdateId = sortedUpdates.last().updateId + 1
     }
 }

@@ -36,9 +36,7 @@ data class InlineKeyboard(
 class TelegramBotService(
     private val botToken: String,
     private val client: HttpClient = HttpClient.newBuilder().build(),
-    private val json: Json = Json {
-        ignoreUnknownKeys = true
-    }
+    private val json: Json = Json { ignoreUnknownKeys = true }
 ) {
     fun getUpdates(updateId: Long): Response {
         val urlGetUpdates = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/getUpdates?offset=$updateId"
@@ -75,7 +73,6 @@ class TelegramBotService(
         )
         return getResponseBody(requestBody)
     }
-
 
     fun checkNextQuestionAndSend(trainer: LearnWordsTrainer, chatId: Long) {
         val question = trainer.getNextQuestion()

@@ -55,7 +55,6 @@ fun main(args: Array<String>) {
     var lastUpdateId = 0L
     val trainers = HashMap<Long, LearnWordsTrainer>()
 
-
     while (true) {
         Thread.sleep(DELAY_MS)
         val response: Response = telegramBotService.getUpdates(lastUpdateId)
@@ -95,11 +94,9 @@ fun handleUpdate(
         telegramBotService.checkNextQuestionAndSend(trainer, chatId)
     }
     if (data.equals(STATISTICS_CLICKED, ignoreCase = true)) {
-
         val statistics = trainer.getStatistics()
 
         telegramBotService.sendMessage(
-
             chatId,
             "Выучено ${statistics.learnedWords.size} из " +
                     "${trainer.dictionary.size} слов | " +

@@ -93,7 +93,8 @@ fun handleUpdate(
     println(chatId)
 
     if (text.equals("Hello", ignoreCase = true) or
-        text.equals("Привет", ignoreCase = true)
+        text.equals("Привет", ignoreCase = true) or
+        text.equals("\uD83D\uDC4B", ignoreCase = true)
     ) {
         if (languageCode == "ru") telegramBotService.sendMessage(
             chatId,

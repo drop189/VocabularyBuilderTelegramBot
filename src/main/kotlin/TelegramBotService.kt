@@ -6,6 +6,8 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 const val HTTPS_API_TELEGRAM_ORG_BOT = "https://api.telegram.org/bot"
 
@@ -41,7 +43,18 @@ class TelegramBotService(
     fun getUpdates(updateId: Long): Response {
         val urlGetUpdates = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/getUpdates?offset=$updateId"
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
-        val responseString: String = client.send(request, HttpResponse.BodyHandlers.ofString()).body()
+
+        val responseString: String = try {
+            client.send(request, HttpResponse.BodyHandlers.ofString()).body()
+        } catch (e: Exception) {
+            val currentDateTime = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
+            val formattedDateTime = currentDateTime.format(formatter)
+            println(formattedDateTime)
+            println(e.message)
+            "{\"ok\":false,\"result\":[]}"
+        }
+
         println(responseString)
         val response: Response = json.decodeFromString(responseString)
         return response

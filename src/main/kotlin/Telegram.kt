@@ -39,12 +39,22 @@ data class Message(
     val text: String? = null,
     @SerialName("chat")
     val chat: Chat,
+    @SerialName("from")
+    val from: From,
 )
 
 @Serializable
 data class Chat(
     @SerialName("id")
     val id: Long,
+)
+
+@Serializable
+data class From(
+    @SerialName("language_code")
+    val languageCode: String,
+    @SerialName("first_name")
+    val firstName: String,
 )
 
 
@@ -73,6 +83,8 @@ fun handleUpdate(
     val text = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
     val data = update.callbackQuery?.data
+    val languageCode = update.message?.from?.languageCode
+    val firstName = update.message?.from?.firstName
     val trainer = trainers.getOrPut(chatId) {
         LearnWordsTrainer("$chatId.txt")
     }
@@ -80,10 +92,19 @@ fun handleUpdate(
     println(text)
     println(chatId)
 
-    if (text.equals("Hello", ignoreCase = true)) telegramBotService.sendMessage(
-        chatId,
-        "Hello"
-    )
+    if (text.equals("Hello", ignoreCase = true) or
+        text.equals("Привет", ignoreCase = true)
+    ) {
+        if (languageCode == "ru") telegramBotService.sendMessage(
+            chatId,
+            "Привет, $firstName \uD83D\uDC4B"
+        )
+        else telegramBotService.sendMessage(
+            chatId,
+            "Hello, $firstName \uD83D\uDC4B"
+        )
+    }
+
     if (text.equals("Menu", ignoreCase = true) or
         text.equals("/start", ignoreCase = true) or
         data.equals(MAIN_MENU_CLICKED, ignoreCase = true)

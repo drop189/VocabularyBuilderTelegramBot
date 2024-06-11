@@ -52,9 +52,9 @@ data class Chat(
 @Serializable
 data class From(
     @SerialName("language_code")
-    val languageCode: String,
+    val languageCode: String = "",
     @SerialName("first_name")
-    val firstName: String,
+    val firstName: String = "",
 )
 
 
@@ -105,7 +105,6 @@ fun handleUpdate(
             "Hello, $firstName \uD83D\uDC4B"
         )
     }
-
     if (text.equals("Menu", ignoreCase = true) or
         text.equals("/start", ignoreCase = true) or
         data.equals(MAIN_MENU_CLICKED, ignoreCase = true)

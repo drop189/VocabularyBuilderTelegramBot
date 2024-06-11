@@ -46,12 +46,12 @@ class TelegramBotService(
 
         val responseString: String = try {
             client.send(request, HttpResponse.BodyHandlers.ofString()).body()
-        } catch (e: Exception) {
+        } catch (exception: Exception) {
             val currentDateTime = LocalDateTime.now()
             val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
             val formattedDateTime = currentDateTime.format(formatter)
             println(formattedDateTime)
-            println(e.message)
+            println(exception.message)
             "{\"ok\":false,\"result\":[]}"
         }
 
@@ -139,7 +139,18 @@ class TelegramBotService(
             .header("Content-type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(requestBodyString))
             .build()
-        val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
-        return response.body()
+        val responseResult: Result<HttpResponse<String>> =
+            runCatching { client.send(request, HttpResponse.BodyHandlers.ofString()) }
+        return responseResult.fold(
+            onSuccess = { response -> response.body() },
+            onFailure = { exception ->
+                val currentDateTime = LocalDateTime.now()
+                val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
+                val formattedDateTime = currentDateTime.format(formatter)
+                println(formattedDateTime)
+                println(exception.message)
+                "{\"ok\":false,\"result\":[]}"
+            }
+        )
     }
 }

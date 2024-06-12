@@ -60,7 +60,7 @@ class TelegramBotService(
         return response
     }
 
-    fun sendMessage(chatId: Long, text: String): String {
+    fun sendMessage(chatId: Long, text: String): String? {
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = text,
@@ -68,7 +68,7 @@ class TelegramBotService(
         return getResponseBody(requestBody)
     }
 
-    fun sendMenu(chatId: Long): String {
+    fun sendMenu(chatId: Long): String? {
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = "Основное меню",
@@ -99,7 +99,7 @@ class TelegramBotService(
         }
     }
 
-    private fun sendQuestion(chatId: Long, question: Question): String {
+    private fun sendQuestion(chatId: Long, question: Question): String? {
         val requestBody = SendMessageRequest(
             chatId = chatId,
             text = question.correctAnswer.original,
@@ -114,7 +114,7 @@ class TelegramBotService(
         return getResponseBody(requestBody)
     }
 
-    private fun sendCompletionMessage(chatId: Long): String {
+    private fun sendCompletionMessage(chatId: Long): String? {
         val requestBody = SendMessageRequest(
             chatId,
             "Вы выучили все слова в базе",
@@ -132,7 +132,7 @@ class TelegramBotService(
         return getResponseBody(requestBody)
     }
 
-    private fun getResponseBody(requestBody: SendMessageRequest): String {
+    private fun getResponseBody(requestBody: SendMessageRequest): String? {
         val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/sendMessage"
         val requestBodyString = json.encodeToString(requestBody)
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
@@ -141,16 +141,6 @@ class TelegramBotService(
             .build()
         val responseResult: Result<HttpResponse<String>> =
             runCatching { client.send(request, HttpResponse.BodyHandlers.ofString()) }
-        return responseResult.fold(
-            onSuccess = { response -> response.body() },
-            onFailure = { exception ->
-                val currentDateTime = LocalDateTime.now()
-                val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
-                val formattedDateTime = currentDateTime.format(formatter)
-                println(formattedDateTime)
-                println(exception.message)
-                "{\"ok\":false,\"result\":[]}"
-            }
-        )
+        return responseResult.getOrNull()?.body()
     }
 }

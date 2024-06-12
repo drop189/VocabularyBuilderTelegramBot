@@ -89,8 +89,7 @@ fun handleUpdate(
         LearnWordsTrainer("$chatId.txt")
     }
 
-    println(text)
-    println(chatId)
+    println("handleUpdate(): chatId = $chatId, text = $text")
 
     if (text.equals("Hello", ignoreCase = true) or
         text.equals("Привет", ignoreCase = true) or

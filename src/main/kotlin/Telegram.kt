@@ -16,6 +16,12 @@ data class Response(
 )
 
 @Serializable
+data class SendResponse(
+    @SerialName("result")
+    val message: Message? = null,
+)
+
+@Serializable
 data class Update(
     @SerialName("update_id")
     val updateId: Long,
@@ -43,6 +49,8 @@ data class Message(
     val from: From,
     @SerialName("message_id")
     val messageId: Long,
+    @SerialName("date")
+    val date: Long,
 )
 
 @Serializable
@@ -85,18 +93,18 @@ fun handleUpdate(
 ) {
     val text = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
-    val messageId = update.message?.messageId ?: return
     val data = update.callbackQuery?.data
-    val languageCode = update.message.from.languageCode
-    val firstName = update.message.from.firstName
+    val languageCode = update.message?.from?.languageCode
+    val firstName = update.message?.from?.firstName
     val trainer = trainers.getOrPut(chatId) {
-        LearnWordsTrainer("$chatId.txt")
+        LearnWordsTrainer("${chatId}_dictionary.txt")
     }
 
     println("handleUpdate(): chatId = $chatId, text = $text")
 
     when {
         text.equals("Hello", ignoreCase = true) or
+                text.equals("Hi", ignoreCase = true) or
                 text.equals("Привет", ignoreCase = true) or
                 text.equals("\uD83D\uDC4B", ignoreCase = true) -> {
             if (languageCode == "ru") telegramBotService.sendMessage(
@@ -118,7 +126,6 @@ fun handleUpdate(
         text.equals("Start test", ignoreCase = true) -> {
             val responseString = telegramBotService.sendMessage(chatId, "Сообщение для изменения") ?: ""
             println(responseString)
-            tempStorageOfMessageId[chatId] = messageId + 1
         }
 
         text.equals("Test", ignoreCase = true) -> {

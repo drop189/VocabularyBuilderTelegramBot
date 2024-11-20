@@ -2,6 +2,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -162,7 +163,19 @@ class TelegramBotService(
             .build()
         val responseResult: Result<HttpResponse<String>> =
             runCatching { client.send(request, HttpResponse.BodyHandlers.ofString()) }
-        return responseResult.getOrNull()?.body()
+
+        val responseString = responseResult.getOrNull()?.body()
+        val response = json.decodeFromString<SendResponse>(responseString ?: "")
+        val chatId = response.message?.chat?.id
+        val messageId = response.message?.messageId
+        val messageDate = response.message?.date
+//Сохранение
+        val file = File("${chatId}_state.txt")
+        file.writeText("")
+        file.appendText("${messageId}|${messageDate}")
+        tempStorageOfMessageId[chatId] = response.message?.messageId
+
+        return responseString
     }
 
     private fun getEditResponseBody(requestBody: EditMessageRequest): String? {

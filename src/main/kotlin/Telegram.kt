@@ -41,6 +41,8 @@ data class Message(
     val chat: Chat,
     @SerialName("from")
     val from: From,
+    @SerialName("message_id")
+    val messageId: Long,
 )
 
 @Serializable
@@ -57,6 +59,7 @@ data class From(
     val firstName: String = "",
 )
 
+val tempStorageOfMessageId = HashMap<Long?, Long?>()
 
 fun main(args: Array<String>) {
 
@@ -78,70 +81,90 @@ fun main(args: Array<String>) {
 fun handleUpdate(
     update: Update,
     telegramBotService: TelegramBotService,
-    trainers: HashMap<Long, LearnWordsTrainer>
+    trainers: HashMap<Long, LearnWordsTrainer>,
 ) {
     val text = update.message?.text
     val chatId = update.message?.chat?.id ?: update.callbackQuery?.message?.chat?.id ?: return
+    val messageId = update.message?.messageId ?: return
     val data = update.callbackQuery?.data
-    val languageCode = update.message?.from?.languageCode
-    val firstName = update.message?.from?.firstName
+    val languageCode = update.message.from.languageCode
+    val firstName = update.message.from.firstName
     val trainer = trainers.getOrPut(chatId) {
         LearnWordsTrainer("$chatId.txt")
     }
 
     println("handleUpdate(): chatId = $chatId, text = $text")
 
-    if (text.equals("Hello", ignoreCase = true) or
-        text.equals("Привет", ignoreCase = true) or
-        text.equals("\uD83D\uDC4B", ignoreCase = true)
-    ) {
-        if (languageCode == "ru") telegramBotService.sendMessage(
-            chatId,
-            "Привет, $firstName \uD83D\uDC4B"
-        )
-        else telegramBotService.sendMessage(
-            chatId,
-            "Hello, $firstName \uD83D\uDC4B"
-        )
-    }
-    if (text.equals("Menu", ignoreCase = true) or
-        text.equals("/start", ignoreCase = true) or
-        data.equals(MAIN_MENU_CLICKED, ignoreCase = true)
-    ) {
-        telegramBotService.sendMenu(chatId)
-    }
-    if (data.equals(LEARN_WORDS_CLICKED, ignoreCase = true)) {
-        telegramBotService.checkNextQuestionAndSend(trainer, chatId)
-    }
-    if (data.equals(STATISTICS_CLICKED, ignoreCase = true)) {
-        val statistics = trainer.getStatistics()
-
-        telegramBotService.sendMessage(
-            chatId,
-            "Выучено ${statistics.learnedWords.size} из " +
-                    "${trainer.dictionary.size} слов | " +
-                    "${statistics.percentageOfLearnedWords}%"
-        )
-    }
-    if (data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) ?: return) {
-        val indexOfAnswer = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
-        val isCorrect = trainer.checkAnswer(indexOfAnswer)
-
-        if (isCorrect) {
-            telegramBotService.sendMessage(chatId, "Правильно")
-        } else {
-            telegramBotService.sendMessage(
-
+    when {
+        text.equals("Hello", ignoreCase = true) or
+                text.equals("Привет", ignoreCase = true) or
+                text.equals("\uD83D\uDC4B", ignoreCase = true) -> {
+            if (languageCode == "ru") telegramBotService.sendMessage(
                 chatId,
-                "Не правильно: " +
-                        "${trainer.question?.correctAnswer?.original} - ${trainer.question?.correctAnswer?.translate}"
+                "Привет, $firstName \uD83D\uDC4B"
+            )
+            else telegramBotService.sendMessage(
+                chatId,
+                "Hello, $firstName \uD83D\uDC4B"
             )
         }
 
-        telegramBotService.checkNextQuestionAndSend(trainer, chatId)
-    }
-    if (data.equals(RESET_PROGRESS_CLICKED, ignoreCase = true)) {
-        trainer.resetProgress()
-        telegramBotService.sendMessage(chatId, "Прогресс сброшен")
+        text.equals("Menu", ignoreCase = true) or
+                text.equals("/start", ignoreCase = true) or
+                data.equals(MAIN_MENU_CLICKED, ignoreCase = true) -> {
+            telegramBotService.sendMenu(chatId)
+        }
+
+        text.equals("Start test", ignoreCase = true) -> {
+            val responseString = telegramBotService.sendMessage(chatId, "Сообщение для изменения") ?: ""
+            println(responseString)
+            tempStorageOfMessageId[chatId] = messageId + 1
+        }
+
+        text.equals("Test", ignoreCase = true) -> {
+            try {
+                telegramBotService.editMessage(chatId, tempStorageOfMessageId[chatId]!!, "Измененное сообщение")
+            } catch (e: Exception) {
+                println(e.message)
+            }
+            println(tempStorageOfMessageId[chatId])
+        }
+
+        data.equals(LEARN_WORDS_CLICKED, ignoreCase = true) -> {
+            telegramBotService.checkNextQuestionAndSend(trainer, chatId)
+        }
+
+        data.equals(STATISTICS_CLICKED, ignoreCase = true) -> {
+            val statistics = trainer.getStatistics()
+
+            telegramBotService.sendMessage(
+                chatId,
+                "Выучено ${statistics.learnedWords.size} из " +
+                        "${trainer.dictionary.size} слов | " +
+                        "${statistics.percentageOfLearnedWords}%"
+            )
+        }
+
+        data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) ?: return -> {
+            val indexOfAnswer = data.substringAfter(CALLBACK_DATA_ANSWER_PREFIX).toInt()
+            val isCorrect = trainer.checkAnswer(indexOfAnswer)
+
+            if (isCorrect) {
+                telegramBotService.sendMessage(chatId, "Правильно")
+            } else {
+                telegramBotService.sendMessage(
+                    chatId,
+                    "Не правильно: " +
+                            "${trainer.question?.correctAnswer?.original} - ${trainer.question?.correctAnswer?.translate}"
+                )
+            }
+
+            telegramBotService.checkNextQuestionAndSend(trainer, chatId)
+        }
+
+        data.equals(RESET_PROGRESS_CLICKED, ignoreCase = true) -> {
+            trainer.resetProgress()
+            telegramBotService.sendMessage(chatId, "Прогресс сброшен")
+        }
     }
 }

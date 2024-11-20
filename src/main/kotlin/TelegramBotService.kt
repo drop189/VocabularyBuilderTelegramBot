@@ -22,6 +22,18 @@ data class SendMessageRequest(
 )
 
 @Serializable
+data class EditMessageRequest(
+    @SerialName("chat_id")
+    val chatId: Long?,
+    @SerialName("message_id")
+    val messageId: Long,
+    @SerialName("text")
+    val text: String,
+    @SerialName("reply_markup")
+    val replyMarkup: ReplyMarkup? = null,
+)
+
+@Serializable
 data class ReplyMarkup(
     @SerialName("inline_keyboard")
     val inlineKeyboard: List<List<InlineKeyboard>>,
@@ -38,7 +50,7 @@ data class InlineKeyboard(
 class TelegramBotService(
     private val botToken: String,
     private val client: HttpClient = HttpClient.newBuilder().build(),
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
     fun getUpdates(updateId: Long): Response {
         val urlGetUpdates = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/getUpdates?offset=$updateId"
@@ -99,6 +111,15 @@ class TelegramBotService(
         }
     }
 
+    fun editMessage(chatId: Long, messageId: Long, message: String): String? {
+        val requestBody = EditMessageRequest(
+            chatId = chatId,
+            messageId = messageId,
+            text = message,
+        )
+        return getEditResponseBody(requestBody)
+    }
+
     private fun sendQuestion(chatId: Long, question: Question): String? {
         val requestBody = SendMessageRequest(
             chatId = chatId,
@@ -134,6 +155,18 @@ class TelegramBotService(
 
     private fun getResponseBody(requestBody: SendMessageRequest): String? {
         val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/sendMessage"
+        val requestBodyString = json.encodeToString(requestBody)
+        val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
+            .header("Content-type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(requestBodyString))
+            .build()
+        val responseResult: Result<HttpResponse<String>> =
+            runCatching { client.send(request, HttpResponse.BodyHandlers.ofString()) }
+        return responseResult.getOrNull()?.body()
+    }
+
+    private fun getEditResponseBody(requestBody: EditMessageRequest): String? {
+        val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/editMessageText"
         val requestBodyString = json.encodeToString(requestBody)
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
             .header("Content-type", "application/json")

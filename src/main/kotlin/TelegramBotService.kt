@@ -68,17 +68,15 @@ class TelegramBotService(
     private val json: Json = Json { ignoreUnknownKeys = true },
 ) {
     fun getUpdates(updateId: Long): Response {
-        val urlGetUpdates = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/getUpdates?offset=$updateId"
+        val urlGetUpdates = getApiUrl("getUpdates?offset=$updateId")
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
 
         val responseString: String = try {
             client.send(request, HttpResponse.BodyHandlers.ofString()).body()
         } catch (exception: Exception) {
-            val currentDateTime = LocalDateTime.now()
-            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
-            val formattedDateTime = currentDateTime.format(formatter)
-            println(formattedDateTime)
-            println(exception.message)
+            val formattedDateTime =
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy"))
+            println("[$formattedDateTime] Error: ${exception.message}")
             "{\"ok\":false,\"result\":[]}"
         }
 
@@ -102,11 +100,11 @@ class TelegramBotService(
             replyMarkup = ReplyMarkup(
                 listOf(
                     listOf(
-                        InlineKeyboard(text = "Изучить слова", callbackData = LEARN_WORDS_CLICKED),
-                        InlineKeyboard(text = "Статистика", callbackData = STATISTICS_CLICKED),
+                        createButton("Изучить слова", LEARN_WORDS_CLICKED),
+                        createButton("Статистика", STATISTICS_CLICKED),
                     ),
                     listOf(
-                        InlineKeyboard(text = "Сбросить прогресс", callbackData = RESET_PROGRESS_CLICKED)
+                        createButton("Сбросить прогресс", RESET_PROGRESS_CLICKED)
                     )
                 )
             )
@@ -122,37 +120,19 @@ class TelegramBotService(
         }
 
         val stateFile = File("${chatId}_state.txt")
-        if (!stateFile.exists()) {
-            sendQuestion(chatId, question)
-            return
-        }
-        val stateLine = stateFile.readLines().firstOrNull() ?: ""
-        val stateParts = stateLine.split("|")
-        if (stateParts.size != 2) {
-            sendQuestion(chatId, question)
-            return
+        val state = stateFile.takeIf { it.exists() }?.readLines()?.firstOrNull()?.split("|")?.let {
+            if (it.size == 2) State(it[0].toLong(), it[1].toLong()) else null
         }
 
-        val state = try {
-            State(
-                messageId = stateParts[0].toLong(),
-                unixTime = stateParts[1].toLong()
-            )
-        } catch (e: Exception) {
-            sendQuestion(chatId, question)
-            return
-        }
-
-        val currentUnixTime = System.currentTimeMillis() / 1000 // В секундах
+        val currentUnixTime = System.currentTimeMillis() / 1000
         val lastMessageId = tempStorageOfMessageId[chatId]
 
-        if (lastMessageId == null || (currentUnixTime - state.unixTime) >= SECONDS_IN_48_HOURS) {
+        if (state == null || (currentUnixTime - state.unixTime) >= SECONDS_IN_48_HOURS) {
             sendQuestion(chatId, question)
         } else {
             sendQuestion(chatId, lastMessageId, question)
         }
     }
-
 
     fun sendWrongAnswer(chatId: Long, trainer: LearnWordsTrainer): String? {
         val requestBody = SendMessageRequest(
@@ -162,7 +142,7 @@ class TelegramBotService(
             replyMarkup = ReplyMarkup(
                 listOf(
                     listOf(
-                        InlineKeyboard(
+                        createButton(
                             text = "Далее", callbackData = CALLBACK_DATA_NEXT
                         )
                     )
@@ -195,11 +175,11 @@ class TelegramBotService(
             text = question.correctAnswer.original,
             replyMarkup = ReplyMarkup(question.variants.mapIndexed { index, word ->
                 listOf(
-                    InlineKeyboard(
+                    createButton(
                         text = word.translate, callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index"
                     )
                 )
-            } + listOf(listOf(InlineKeyboard(text = "Главное меню", callbackData = MAIN_MENU_CLICKED))))
+            } + listOf(listOf(createButton(text = "Главное меню", callbackData = MAIN_MENU_CLICKED))))
         )
         return getResponseBody(requestBody)
     }
@@ -211,11 +191,11 @@ class TelegramBotService(
             messageId = messageId,
             replyMarkup = ReplyMarkup(question.variants.mapIndexed { index, word ->
                 listOf(
-                    InlineKeyboard(
+                    createButton(
                         text = word.translate, callbackData = "$CALLBACK_DATA_ANSWER_PREFIX$index"
                     )
                 )
-            } + listOf(listOf(InlineKeyboard(text = "Главное меню", callbackData = MAIN_MENU_CLICKED))))
+            } + listOf(listOf(createButton(text = "Главное меню", callbackData = MAIN_MENU_CLICKED))))
         )
         return getResponseBody(requestBody)
     }
@@ -227,7 +207,7 @@ class TelegramBotService(
             replyMarkup = ReplyMarkup(
                 listOf(
                     listOf(
-                        InlineKeyboard(
+                        createButton(
                             text = "Главное меню",
                             callbackData = MAIN_MENU_CLICKED
                         )
@@ -238,8 +218,8 @@ class TelegramBotService(
         return getResponseBody(requestBody)
     }
 
-    private fun getResponseBody(requestBody: SendMessageRequest): String? {
-        val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/sendMessage"
+    private fun getResponseBody(requestBody: SendMessageRequest): String? {                         // Send
+        val urlSendMessage = getApiUrl("sendMessage")
         val requestBodyString = json.encodeToString(requestBody)
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
             .header("Content-type", "application/json")
@@ -254,16 +234,15 @@ class TelegramBotService(
         val messageId = response.message?.messageId
         val messageDate = response.message?.date
 //Сохранение
-        val file = File("${chatId}_state.txt")
-        file.writeText("")
-        file.appendText("${messageId}|${messageDate}")
+        File("${chatId}_state.txt")
+            .writeText("${messageId}|${messageDate}")
         tempStorageOfMessageId[chatId] = response.message?.messageId
 
         return responseString
     }
 
-    private fun getResponseBody(requestBody: EditMessageRequest): String? {
-        val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/editMessageText"
+    private fun getResponseBody(requestBody: EditMessageRequest): String? {                         // Edit
+        val urlSendMessage = getApiUrl("editMessageText")
         val requestBodyString = json.encodeToString(requestBody)
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
             .header("Content-type", "application/json")
@@ -274,8 +253,8 @@ class TelegramBotService(
         return responseResult.getOrNull()?.body()
     }
 
-    private fun getResponseBody(requestBody: DeleteMessageRequest): String? {
-        val urlSendMessage = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/deleteMessage"
+    private fun getResponseBody(requestBody: DeleteMessageRequest): String? {                       // Delete
+        val urlSendMessage = getApiUrl("deleteMessage")
         val requestBodyString = json.encodeToString(requestBody)
         val request: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlSendMessage))
             .header("Content-type", "application/json")
@@ -284,5 +263,11 @@ class TelegramBotService(
         val responseResult: Result<HttpResponse<String>> =
             runCatching { client.send(request, HttpResponse.BodyHandlers.ofString()) }
         return responseResult.getOrNull()?.body()
+    }
+
+    private fun getApiUrl(endpoint: String) = "$HTTPS_API_TELEGRAM_ORG_BOT$botToken/$endpoint"
+
+    private fun createButton(text: String, callbackData: String): InlineKeyboard {
+        return InlineKeyboard(text = text, callbackData = callbackData)
     }
 }

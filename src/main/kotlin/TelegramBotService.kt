@@ -236,7 +236,7 @@ class TelegramBotService(
 //Сохранение
         File("${chatId}_state.txt")
             .writeText("${messageId}|${messageDate}")
-        tempStorageOfMessageId[chatId] = response.message?.messageId
+        tempStorageOfMessageId[chatId] = messageId
 
         return responseString
     }

@@ -3,16 +3,17 @@ import kotlinx.serialization.Serializable
 
 private const val DELAY_MS = 2000L
 
+const val RESET_PROGRESS_CLICKED = "reset_progress_clicked"
 const val LEARN_WORDS_CLICKED = "learn_words_clicked"
 const val STATISTICS_CLICKED = "statistics_clicked"
-const val RESET_PROGRESS_CLICKED = "reset_progress_clicked"
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 const val MAIN_MENU_CLICKED = "main_menu_clicked"
+const val CALLBACK_DATA_NEXT = "next"
 
 @Serializable
 data class Response(
     @SerialName("result")
-    val result: List<Update>,
+    val result: List<Update> = emptyList(),
 )
 
 @Serializable
@@ -141,6 +142,10 @@ fun handleUpdate(
             telegramBotService.checkNextQuestionAndSend(trainer, chatId)
         }
 
+        data.equals(CALLBACK_DATA_NEXT, ignoreCase = true) -> {
+            telegramBotService.checkNextQuestionAndSend(trainer, chatId)
+        }
+
         data.equals(STATISTICS_CLICKED, ignoreCase = true) -> {
             val statistics = trainer.getStatistics()
 
@@ -159,13 +164,16 @@ fun handleUpdate(
             if (isCorrect) {
                 telegramBotService.sendMessage(chatId, "Правильно")
             } else {
-                telegramBotService.sendMessage(
-                    chatId,
-                    "Не правильно: " +
-                            "${trainer.question?.correctAnswer?.original} - ${trainer.question?.correctAnswer?.translate}"
+                telegramBotService.deleteMessage(chatId, tempStorageOfMessageId[chatId]!!)
+                telegramBotService.sendWrongAnswer(
+                    chatId = chatId,
+                    trainer = trainer
                 )
+                return
             }
 
+            Thread.sleep(500)
+            telegramBotService.deleteMessage(chatId, tempStorageOfMessageId[chatId]!! - 1)
             telegramBotService.checkNextQuestionAndSend(trainer, chatId)
         }
 

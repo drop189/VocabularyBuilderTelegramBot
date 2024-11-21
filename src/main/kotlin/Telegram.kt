@@ -164,7 +164,7 @@ fun handleUpdate(
             if (isCorrect) {
                 telegramBotService.sendMessage(chatId, "Правильно")
             } else {
-                telegramBotService.deleteMessage(chatId, tempStorageOfMessageId[chatId]!!)
+                tempStorageOfMessageId[chatId]?.let { telegramBotService.deleteMessage(chatId, it) }
                 telegramBotService.sendWrongAnswer(
                     chatId = chatId,
                     trainer = trainer
@@ -173,7 +173,7 @@ fun handleUpdate(
             }
 
             Thread.sleep(500)
-            telegramBotService.deleteMessage(chatId, tempStorageOfMessageId[chatId]!! - 1)
+            telegramBotService.deleteMessage(chatId, tempStorageOfMessageId[chatId]?.minus(1) ?: -1)
             telegramBotService.checkNextQuestionAndSend(trainer, chatId)
         }
 
